@@ -1,29 +1,30 @@
 import { useEffect, useState } from "react";
 
-interface User {
+interface Game {
   name: string;
-  email: string;
+  platform: string;
+  rating: string;
 }
 
-const fetchUsers = async (): Promise<User[]> => {
+const fetchGames = async (): Promise<Game[]> => {
   try {
-    const response = await fetch("/api/users");
+    const response = await fetch("/api/games");
     const data = await response.json();
-    return data as User[];
+    return data as Game[];
   } catch (error) {
-    console.error("Erreur lors du fetch des users:", error);
+    console.error("Erreur lors du fetch des jeux:", error);
     return [];
   }
 };
 
-const createUser = async (userData: User): Promise<User | null> => {
+const createGame = async (gameData: Game): Promise<Game | null> => {
   try {
-    const response = await fetch("/api/users", {
+    const response = await fetch("/api/games", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(userData),
+      body: JSON.stringify(gameData),
     });
 
     if (response.ok) {
@@ -31,21 +32,21 @@ const createUser = async (userData: User): Promise<User | null> => {
     }
     return null;
   } catch (error) {
-    console.error("Erreur lors de l'ajout d'un user:", error);
+    console.error("Erreur lors de l'ajout d'un jeu:", error);
     return null;
   }
 };
 
 function App() {
-  const [users, setUsers] = useState<User[]>([]);
+  const [games, setGames] = useState<Game[]>([]);
 
   useEffect(() => {
-    const getUsers = async () => {
-      const data = await fetchUsers();
-      setUsers(data);
+    const getGames = async () => {
+      const data = await fetchGames();
+      setGames(data);
     };
 
-    getUsers();
+    getGames();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -54,35 +55,43 @@ function App() {
     const form = e.currentTarget;
     const formData = new FormData(form);
 
-    const userData = {
+    const gameData = {
       name: formData.get("name") as string,
-      email: formData.get("email") as string,
+      platform: formData.get("platform") as string,
+      rating: formData.get("rating") as string,
     };
 
-    const newUser = await createUser(userData);
-    if (newUser) {
-      setUsers([...users, newUser]);
+    const newGame = await createGame(gameData);
+    if (newGame) {
+      setGames([...games, newGame]);
       form.reset();
     }
   };
 
   return (
     <div>
-      <h1 className="text-3xl font-bold underline">Liste des utilisateurs</h1>
+      <h1 className="text-3xl font-bold underline">Liste des jeux vidéo</h1>
 
       <form onSubmit={handleSubmit} className="my-4 p-4">
-        <div className="mb-2  flex gap-2">
+        <div className="mb-2 flex gap-2">
           <input
             type="text"
             name="name"
-            placeholder="Nom"
+            placeholder="Nom du jeu"
             className="border p-2"
             required
           />
           <input
-            type="email"
-            name="email"
-            placeholder="Email"
+            type="text"
+            name="platform"
+            placeholder="Plateforme"
+            className="border p-2"
+            required
+          />
+          <input
+            type="text"
+            name="rating"
+            placeholder="Note"
             className="border p-2"
             required
           />
@@ -90,15 +99,15 @@ function App() {
             type="submit"
             className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 cursor-pointer"
           >
-            Ajouter un utilisateur
+            Ajouter un jeu
           </button>
         </div>
       </form>
 
       <ul>
-        {users.map((user) => (
-          <li key={user.email}>
-            {user.name} - {user.email}
+        {games.map((game) => (
+          <li key={game.name}>
+            {game.name} - {game.platform} - Note: {game.rating}
           </li>
         ))}
       </ul>
