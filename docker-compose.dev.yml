@@ -12,3 +12,15 @@ services:
         target: /app/node_modules
     ports:
       - 5173:5173
+  api:
+    build:
+      context: ./api
+      # on aura le même en dev et en prod
+      dockerfile: Dockerfile
+    volumes:
+      - type: bind
+        source: ./api/src
+        target: /app/src
+    # le port 80 de la machine hôte va être utilisé par nginx avec le reverse proxy. nginx pourra communiquer directement sur le réseau docket avec api en utilisant le prot 80 du container api. Mais on pourra acccéder depuis notre machine hôte sans passer par nginx à notre container api en utilisant le port 3001.
+    ports:
+      - 3001:80
