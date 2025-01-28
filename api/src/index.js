@@ -2,9 +2,9 @@ const express = require("express");
 const { MongoClient } = require("mongodb");
 
 const { MONGO_USERNAME, MONGO_PASSWORD } = process.env;
-const mongoUrl = `mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@db`;
+const mongoUrl = `mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@db:27017`;
 const dbName = "dev_container_db";
-const collectionName = "users";
+const collectionName = "games";
 let dbClient;
 
 const app = express();
@@ -21,49 +21,48 @@ async function connectToDatabase() {
   }
 }
 
-app.get("/api/users", async (req, res) => {
+app.get("/api/games", async (req, res) => {
   try {
-    const users = await dbClient
+    const games = await dbClient
       .db(dbName)
       .collection(collectionName)
       .find({})
       .toArray();
 
-    res.status(200).json(users);
+    res.status(200).json(games);
   } catch (err) {
-    console.error("Erreur lors de la récupération des utilisateurs:", err);
+    console.error("Erreur lors de la récupération des jeux:", err);
     res.status(500).json({ message: err.message });
   }
 });
 
-app.post("/api/users", async (req, res) => {
+app.post("/api/games", async (req, res) => {
   try {
-    const { name, email } = req.body;
-    // on ne vérifie pas si l'email existe déjà car c'est juste un test
+    const { name, platform, rating } = req.body;
 
-    // Ajouter le nouvel utilisateur
+    // Ajouter le nouvel jeu
     const result = await dbClient
       .db(dbName)
       .collection(collectionName)
-      .insertOne({ name, email });
+      .insertOne({ name, platform, rating });
 
-    res.status(201).json({ name, email, _id: result.insertedId });
+    res.status(201).json({ name, platform, rating, _id: result.insertedId });
   } catch (err) {
-    console.error("Erreur lors de la création de l'utilisateur:", err);
+    console.error("Erreur lors de la création du jeu:", err);
     res.status(500).json({ message: err.message });
   }
 });
 
-app.delete("/api/users", async (req, res) => {
+app.delete("/api/games", async (req, res) => {
   try {
-    const { email } = req.body;
+    const { name } = req.body;
 
-    // Supprimer le premier utilisateur trouvé avec cet email
-    await dbClient.db(dbName).collection(collectionName).deleteOne({ email });
+    // Supprimer le premier jeu trouvé avec ce nom
+    await dbClient.db(dbName).collection(collectionName).deleteOne({ name });
 
     res.status(200).json({ message: "Utilisateur supprimé avec succès" });
   } catch (err) {
-    console.error("Erreur lors de la suppression de l'utilisateur:", err);
+    console.error("Erreur lors de la suppression du jeu:", err);
     res.status(500).json({ message: err.message });
   }
 });
