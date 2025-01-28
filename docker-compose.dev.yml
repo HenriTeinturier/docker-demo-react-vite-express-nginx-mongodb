@@ -24,3 +24,37 @@ services:
     # le port 80 de la machine hôte va être utilisé par nginx avec le reverse proxy. nginx pourra communiquer directement sur le réseau docket avec api en utilisant le prot 80 du container api. Mais on pourra acccéder depuis notre machine hôte sans passer par nginx à notre container api en utilisant le port 3001.
     ports:
       - 3001:80
+    env_file:
+      - .env.dev
+    environment:
+      - NODE_ENV=development
+  # mongodb_init:
+  #   image: mongo:latest
+  #   environment:
+  #     - MONGO_INITDB_ROOT_USERNAME=superadmin
+  #     - MONGO_INITDB_ROOT_PASSWORD=superpassword
+  #   ports:
+  #     - 27017:27017
+  #   volumes:
+  #     - type: volume
+  #       source: mongodb_dev_data
+  #       target: /data/db
+  #     - type: volume
+  #       source: mongodb_dev_config
+  #       target: /data/configdb
+  db:
+    image: mongo:latest
+    ports:
+      - 27017:27017
+    volumes:
+      - type: volume
+        source: mongodb_dev_data
+        target: /data/db
+      - type: volume
+        source: mongodb_dev_config
+        target: /data/configdb
+volumes:
+  mongodb_dev_data:
+    external: true
+  mongodb_dev_config:
+    external: true
