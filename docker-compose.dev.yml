@@ -53,6 +53,15 @@ services:
       - type: volume
         source: mongodb_dev_config
         target: /data/configdb
+  reverse-proxy:
+    build:
+      context: ./reverse-proxy
+      dockerfile: Dockerfile.dev
+    ports:
+      - 80:80
+    depends_on:
+      - api
+      - db
 volumes:
   mongodb_dev_data:
     external: true
