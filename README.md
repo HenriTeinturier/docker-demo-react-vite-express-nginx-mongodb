@@ -1,5 +1,16 @@
 # Application de Gestion de Jeux
 
+🐳 Projet démo illustrant une configuration Docker multi-services :
+
+- Nginx comme reverse proxy
+- Application React (Vite) pour le front-end
+- API Node.js (Express)
+- Base de données MongoDB
+
+Un exemple concret d'architecture moderne conteneurisée, avec gestion des volumes, variables d'environnement et communication inter-services. Le tout illustré à travers une application simple de gestion de jeux vidéo.
+
+Tech: Docker 🐳 | Nginx 🔄 | React ⚛️ | Node.js 💻 | MongoDB 🍃
+
 ## Développement
 
 ### 1. Création des volumes Docker
