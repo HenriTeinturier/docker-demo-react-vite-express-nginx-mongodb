@@ -12,11 +12,8 @@ lerna-debug.log*
 
 # Ignorer tous les fichiers .env
 .env
-# Ignorer les variantes spécifiques
-.env.*
-# Ne pas ignorer .env.example
-!.env.example
-
+.env.dev
+.env.prod
 
 # Dossiers spécifiques à React/Vite
 client/dist
