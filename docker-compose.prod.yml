@@ -1,0 +1,63 @@
+name: myapp-prod
+version: "3.9"
+services:
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.prod
+    restart: unless-stopped
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile.prod
+    # env_file:
+    #   - .env.prod
+    environment:
+      - NODE_ENV=production
+      - MONGO_USERNAME
+      - MONGO_PASSWORD
+    restart: unless-stopped
+    depends_on:
+      - db
+  db:
+    image: mongo:latest
+    # env_file:
+    #   - .env.prod
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME
+      - MONGO_INITDB_ROOT_PASSWORD
+    volumes:
+      - type: volume
+        source: db_prod_data
+        target: /data/db
+      - type: volume
+        source: db_prod_config
+        target: /data/configdb
+    # commenté car mon vps est mono coeur. C'était pour le test sur ma machine host locale.
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: "4" # Limite à 4 cœurs par exemple
+    #     reservations:
+    #       cpus: "2"
+    restart: unless-stopped
+  reverse-proxy:
+    build:
+      context: ./reverse-proxy
+      dockerfile: Dockerfile.prod
+    volumes:
+      - type: bind
+        source: /etc/letsencrypt
+        target: /etc/letsencrypt
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - api
+      - db
+    restart: unless-stopped
+volumes:
+  db_prod_data:
+    external: true
+  db_prod_config:
+    external: true

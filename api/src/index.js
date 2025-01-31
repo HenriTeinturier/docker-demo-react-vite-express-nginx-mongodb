@@ -3,7 +3,9 @@ const { MongoClient } = require("mongodb");
 
 const { MONGO_USERNAME, MONGO_PASSWORD } = process.env;
 const mongoUrl = `mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@db:27017`;
-const dbName = "dev_container_db";
+const nodeEnvironment = (process.env.NODE_ENV || "development").trim();
+const dbName =
+  nodeEnvironment === "production" ? "db_prod" : "dev_container_db";
 const collectionName = "games";
 let dbClient;
 
@@ -72,6 +74,30 @@ app.all("*", (req, res) => {
   res.status(404).json({
     message: "Route non trouvée",
     path: req.path,
+  });
+});
+
+process.on("SIGINT", () => {
+  server.close((error) => {
+    if (error) {
+      console.error("Erreur lors de la fermeture du serveur:", error);
+      process.exit(1);
+    } else {
+      if (dbClient) {
+        dbClient.close((err) => {
+          if (err) {
+            console.error(
+              "Erreur lors de la fermeture de la connexion à MongoDB:",
+              err
+            );
+            process.exit(1);
+          } else {
+            console.log("Connexion à MongoDB fermée");
+            process.exit(0);
+          }
+        });
+      }
+    }
   });
 });
 

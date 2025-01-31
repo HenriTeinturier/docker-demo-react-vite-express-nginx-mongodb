@@ -1,3 +1,4 @@
+name: myapp-dev
 version: "3.9"
 services:
   client:
@@ -62,6 +63,7 @@ services:
     depends_on:
       - api
       - db
+      - client
 volumes:
   mongodb_dev_data:
     external: true
