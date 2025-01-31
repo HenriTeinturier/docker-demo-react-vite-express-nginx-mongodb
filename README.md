@@ -224,7 +224,7 @@ Pour vérifier que tout se passe bien on va aller voir les logs
 docker compose -f docker compose.prod.yml logs -f
 ```
 
-On peut aussi aller voir si tous nos services sont up et s’il y a eu des restart
+On peut aussi aller voir si tous nos services sont up et s'il y a eu des restart
 
 ```bash
 docker compose -f docker compose.prod.yml ps
@@ -233,3 +233,42 @@ docker compose -f docker compose.prod.yml ps
 Normalement tout est ok et on peut voir le résultat en allant sur notre domaine
 
 ![Capture d'écran de l'application](./assets/capture.png)
+
+## Ajout du renouvellement automatique des certificats
+
+Le certificat généré avec Certbot est valide pour 3 mois. Pour automatiser son renouvellement, nous allons créer une tâche cron qui s'exécutera quotidiennement à minuit. Le renouvellement ne sera effectif que si la date d'expiration approche (30 jours avant expiration).
+
+### Processus de renouvellement
+
+Pour renouveler le certificat, Certbot doit écouter sur le port 80 du VPS. Le processus se déroule ainsi :
+
+1. Arrêt temporaire du reverse-proxy Nginx (qui écoute sur le port 80)
+2. Renouvellement du certificat par Certbot
+3. Redémarrage du reverse-proxy
+
+Certbot fournit des hooks permettant d'exécuter des actions avant et après le renouvellement.
+
+### Configuration
+
+1. Vérifiez d'abord le chemin complet de Docker Compose :
+
+```bash
+which docker compose
+# Résultat typique : /snap/bin/docker
+```
+
+2. Testez la commande de renouvellement :
+
+```bash
+sudo certbot --standalone renew \
+  --pre-hook "/snap/bin/docker compose -f /home/<nom_utilisateur>/docker-production/docker-compose.prod.yml stop reverse-proxy" \
+  --post-hook "/snap/bin/docker compose -f /home/<nom_utilisateur>/docker-production/docker-compose.prod.yml restart reverse-proxy"
+```
+
+3. Ajoutez la tâche cron (pas besoin de sudo car les crons sont exécutés en root) :
+
+```bash
+sudo crontab -e
+# Ajoutez la ligne suivante :
+0 0 * * * certbot --standalone renew --pre-hook "/snap/bin/docker compose -f /home/<nom_utilisateur>/docker-production/docker-compose.prod.yml stop reverse-proxy" --post-hook "/snap/bin/docker compose -f /home/<nom_utilisateur>/docker-production/docker-compose.prod.yml restart reverse-proxy"
+```
